@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import useAuth from '../hook/Useauth'
+import { useNavigate } from 'react-router'
 
 const InputIcon = ({ children }) => (
   <span className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-stone-400">
@@ -6,12 +8,12 @@ const InputIcon = ({ children }) => (
   </span>
 )
 
-const TextInput = ({ icon, rightIcon, ...props }) => (
+const TextInput = ({ icon, rightIcon, className = '', ...props }) => (
   <label className="group relative block">
     <InputIcon>{icon}</InputIcon>
     <input
       {...props}
-      className="h-13 w-full rounded-2xl border border-stone-200/80 bg-white/90 pl-12 pr-12 text-sm text-stone-800 outline-none transition duration-200 placeholder:text-stone-400 focus:border-amber-600 focus:bg-white focus:shadow-[0_0_0_4px_rgba(180,119,36,0.08)]"
+      className={`h-13 w-full rounded-2xl border border-stone-200/80 bg-white/90 pl-12 pr-12 text-sm text-stone-800 outline-none transition duration-200 placeholder:text-stone-400 focus:border-amber-600 focus:bg-white focus:shadow-[0_0_0_4px_rgba(180,119,36,0.08)] ${className}`}
     />
     {rightIcon ? (
       <span className="absolute right-5 top-1/2 -translate-y-1/2 text-stone-400">
@@ -77,10 +79,171 @@ const RoleCard = ({ active, title, description, icon, onClick }) => (
   </button>
 )
 
+const FashionShowcaseArt = ({ role, fullname }) => {
+  const isSeller = role === 'seller'
+  const accentClass = isSeller
+    ? 'from-orange-300/30 to-amber-50/10'
+    : 'from-rose-200/30 to-amber-50/10'
+
+  return (
+    <div className="relative mx-auto mt-10 w-full max-w-[430px]">
+      <div className="absolute -left-10 top-10 h-28 w-28 rounded-full bg-white/12 blur-2xl" />
+      <div className="absolute -right-6 top-24 h-32 w-32 rounded-full bg-amber-200/20 blur-2xl" />
+
+      <div className="relative rounded-[2rem] border border-white/15 bg-white/8 p-5 shadow-[0_24px_60px_rgba(50,28,7,0.18)] backdrop-blur-md">
+        <div className={`absolute inset-0 rounded-[2rem] bg-gradient-to-br ${accentClass}`} />
+
+        <div className="relative grid gap-4">
+          <div className="flex items-center justify-between rounded-[1.5rem] border border-white/10 bg-[#fff9f2]/95 p-4 text-stone-900 shadow-[0_16px_30px_rgba(61,37,11,0.14)]">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-700/80">
+                New Profile
+              </p>
+              <p className="mt-2 text-lg font-semibold">
+                {fullname.trim() || 'Your Signature Style'}
+              </p>
+              <p className="mt-1 text-sm text-stone-500">
+                {isSeller ? 'Launching a boutique storefront' : 'Curating a premium wishlist'}
+              </p>
+            </div>
+            <div className="relative h-18 w-18 overflow-hidden rounded-[1.4rem] bg-[linear-gradient(145deg,_#f3cf99_0%,_#d48834_100%)]">
+              <div className="absolute left-1/2 top-3 h-5 w-5 -translate-x-1/2 rounded-full bg-[#fff6ea]" />
+              <div className="absolute bottom-0 left-1/2 h-10 w-12 -translate-x-1/2 rounded-t-[1.8rem] bg-[#fff0d7]" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-[1.15fr_0.85fr] gap-4">
+            <div className="rounded-[1.7rem] border border-white/10 bg-[#4f2d11]/55 p-4 text-white shadow-[0_18px_32px_rgba(30,16,3,0.2)]">
+              <div className="flex items-center justify-between">
+                <p className="text-xs uppercase tracking-[0.3em] text-white/65">Lookbook</p>
+                <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] uppercase tracking-[0.25em] text-white/75">
+                  {role}
+                </span>
+              </div>
+
+              <div className="mt-4 rounded-[1.5rem] bg-[linear-gradient(180deg,_rgba(255,243,224,0.92)_0%,_rgba(252,215,163,0.92)_100%)] p-4">
+                <div className="relative h-52 overflow-hidden rounded-[1.3rem] bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.9),_rgba(255,238,214,0.55)_36%,_rgba(201,126,38,0.32)_100%)]">
+                  <div className="absolute left-1/2 top-8 h-11 w-11 -translate-x-1/2 rounded-full bg-[#7b4720]" />
+                  <div className="absolute left-1/2 top-16 h-24 w-16 -translate-x-1/2 rounded-t-[2rem] rounded-b-[1rem] bg-[#fef4e6]" />
+                  <div className="absolute left-[31%] top-[4.7rem] h-18 w-8 rotate-[20deg] rounded-full bg-[#f6e3c6]" />
+                  <div className="absolute right-[31%] top-[4.7rem] h-18 w-8 -rotate-[20deg] rounded-full bg-[#f6e3c6]" />
+                  <div className="absolute bottom-0 left-1/2 h-20 w-28 -translate-x-1/2 rounded-t-[3rem] bg-[#cb7f33]" />
+                  <div className="absolute bottom-6 left-1/2 h-16 w-36 -translate-x-1/2 rounded-[999px] border border-white/40" />
+                  <div className="absolute -left-3 top-6 h-14 w-14 rounded-full border border-white/30" />
+                  <div className="absolute -right-4 bottom-8 h-18 w-18 rounded-full border border-white/35" />
+                </div>
+
+                <div className="mt-3 flex items-center justify-between text-stone-700">
+                  <div>
+                    <p className="text-sm font-semibold">
+                      {isSeller ? 'Storefront Launch Kit' : 'Personal Style Onboarding'}
+                    </p>
+                    <p className="mt-1 text-xs text-stone-500">
+                      {isSeller ? 'Inventory, edits, and customer reach' : 'Discovery, saves, and curated drops'}
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-white/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-amber-700">
+                    live
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <div className="rounded-[1.5rem] border border-white/10 bg-white/12 p-4 backdrop-blur-sm">
+                <p className="text-xs uppercase tracking-[0.3em] text-white/65">Mood</p>
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  {['#fde7cc', '#f6bb71', '#fff4e7', '#8c5020'].map((color) => (
+                    <span
+                      key={color}
+                      className="h-12 rounded-2xl shadow-inner shadow-black/10"
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-[1.5rem] border border-white/10 bg-white/95 p-4 text-stone-900 shadow-[0_16px_30px_rgba(52,27,8,0.14)]">
+                <p className="text-xs uppercase tracking-[0.3em] text-stone-400">Status</p>
+                <p className="mt-3 text-2xl font-semibold">
+                  {isSeller ? 'Boutique Ready' : 'Wardrobe Ready'}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-stone-500">
+                  Your selected role updates the register experience instantly.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const navigate = useNavigate
+
+const initialFormData = {
+  fullname: '',
+  email: '',
+  contact: '',
+  password: '',
+  confirmPassword: '',
+  role: 'buyer',
+  agreeToTerms: false,
+}
+
 const Register = () => {
-  const [selectedRole, setSelectedRole] = useState('buyer')
+  const [formData, setFormData] = useState(initialFormData)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [submitError, setSubmitError] = useState('')
+  const { handleRegister, loading, error } = useAuth()
+
+  const handleChange = (event) => {
+    const { name, value, type, checked } = event.target
+
+    setFormData((current) => ({
+      ...current,
+      [name]: type === 'checkbox' ? checked : value,
+    }))
+  }
+
+  const updateRole = (role) => {
+    setFormData((current) => ({
+      ...current,
+      role,
+    }))
+  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+    setSubmitError('')
+
+    if (formData.password !== formData.confirmPassword) {
+      setSubmitError('Passwords do not match.')
+      return
+    }
+
+    if (!formData.agreeToTerms) {
+      setSubmitError('Please accept the Terms & Conditions and Privacy Policy.')
+      return
+    }
+
+    try {
+      await handleRegister({
+        email: formData.email,
+        contact: formData.contact,
+        fullname: formData.fullname,
+        password: formData.password,
+        role: formData.role,
+      })
+
+      setFormData(initialFormData)
+    } catch (requestError) {
+      setSubmitError(requestError.message)
+    }
+  }
+  navigate('/')
 
   return (
     <section className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(221,170,109,0.22),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(194,132,55,0.18),_transparent_24%),linear-gradient(135deg,_#f8f4ee_0%,_#f3ede4_45%,_#ede4d7_100%)] px-4 py-5 sm:px-6 lg:px-8">
@@ -141,11 +304,14 @@ const Register = () => {
                 </div>
               </div>
 
-              <form className="space-y-4">
+              <form className="space-y-4" onSubmit={handleSubmit}>
                 <div className="grid gap-4 md:grid-cols-2">
                   <TextInput
+                    name="fullname"
                     type="text"
                     placeholder="Full Name"
+                    value={formData.fullname}
+                    onChange={handleChange}
                     icon={
                       <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                         <path d="M20 21a8 8 0 0 0-16 0" />
@@ -154,8 +320,11 @@ const Register = () => {
                     }
                   />
                   <TextInput
+                    name="email"
                     type="email"
                     placeholder="Email Address"
+                    value={formData.email}
+                    onChange={handleChange}
                     icon={
                       <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                         <path d="M4 6h16v12H4z" />
@@ -166,8 +335,11 @@ const Register = () => {
                 </div>
 
                 <TextInput
+                  name="contact"
                   type="tel"
                   placeholder="Contact Number"
+                  value={formData.contact}
+                  onChange={handleChange}
                   icon={
                     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                       <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.35 1.78.68 2.62a2 2 0 0 1-.45 2.11L8.06 9.94a16 16 0 0 0 6 6l1.49-1.28a2 2 0 0 1 2.11-.45c.84.33 1.72.56 2.62.68A2 2 0 0 1 22 16.92Z" />
@@ -176,8 +348,11 @@ const Register = () => {
                 />
 
                 <TextInput
+                  name="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Password"
+                  value={formData.password}
+                  onChange={handleChange}
                   icon={
                     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                       <rect x="5" y="11" width="14" height="10" rx="2" />
@@ -199,8 +374,11 @@ const Register = () => {
                 />
 
                 <TextInput
+                  name="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
                   placeholder="Confirm Password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
                   icon={
                     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                       <rect x="5" y="11" width="14" height="10" rx="2" />
@@ -225,10 +403,10 @@ const Register = () => {
                   <p className="mb-3 text-base font-medium text-stone-700">Choose your role</p>
                   <div className="grid gap-4 md:grid-cols-2">
                     <RoleCard
-                      active={selectedRole === 'buyer'}
+                      active={formData.role === 'buyer'}
                       title="Buyer"
                       description="Shop your favorite products"
-                      onClick={() => setSelectedRole('buyer')}
+                      onClick={() => updateRole('buyer')}
                       icon={
                         <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                           <path d="M6 7h12l-1 13H7L6 7Z" />
@@ -237,10 +415,10 @@ const Register = () => {
                       }
                     />
                     <RoleCard
-                      active={selectedRole === 'seller'}
+                      active={formData.role === 'seller'}
                       title="Seller"
                       description="Sell your products to customers"
-                      onClick={() => setSelectedRole('seller')}
+                      onClick={() => updateRole('seller')}
                       icon={
                         <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                           <path d="M4 10h16" />
@@ -255,7 +433,10 @@ const Register = () => {
 
                 <label className="flex items-start gap-3 pt-1 text-sm leading-6 text-stone-500">
                   <input
+                    name="agreeToTerms"
                     type="checkbox"
+                    checked={formData.agreeToTerms}
+                    onChange={handleChange}
                     className="mt-0.5 h-4 w-4 rounded border-stone-300 accent-amber-700"
                   />
                   <span>
@@ -270,11 +451,18 @@ const Register = () => {
                   </span>
                 </label>
 
+                {submitError || error ? (
+                  <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {submitError || error}
+                  </p>
+                ) : null}
+
                 <button
                   type="submit"
-                  className="mt-2 inline-flex h-13 w-full items-center justify-center rounded-2xl bg-gradient-to-r from-amber-700 via-amber-600 to-amber-700 px-6 text-base font-semibold text-white shadow-[0_14px_35px_rgba(180,119,36,0.35)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(180,119,36,0.38)]"
+                  disabled={loading}
+                  className="mt-2 inline-flex h-13 w-full items-center justify-center rounded-2xl bg-gradient-to-r from-amber-700 via-amber-600 to-amber-700 px-6 text-base font-semibold text-white shadow-[0_14px_35px_rgba(180,119,36,0.35)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(180,119,36,0.38)] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
                 >
-                  Create Account
+                  {loading ? 'Creating Account...' : 'Create Account'}
                 </button>
               </form>
             </div>
@@ -293,32 +481,7 @@ const Register = () => {
                   </p>
                 </div>
 
-                <div className="rounded-[1.75rem] border border-white/15 bg-white/10 p-6 backdrop-blur-md">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
-                      <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                        <path d="M3 7h18" />
-                        <path d="M6 3h12l2 4v11a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7l2-4Z" />
-                        <path d="M9 12h6" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-sm uppercase tracking-[0.35em] text-white/55">Marketplace</p>
-                      <p className="mt-1 text-xl font-semibold">Join as buyer or seller</p>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 grid grid-cols-2 gap-4">
-                    <div className="rounded-2xl bg-white/10 p-4">
-                      <p className="text-2xl font-semibold">10k+</p>
-                      <p className="mt-2 text-sm text-white/70">Curated style pieces explored</p>
-                    </div>
-                    <div className="rounded-2xl bg-white/10 p-4">
-                      <p className="text-2xl font-semibold">24/7</p>
-                      <p className="mt-2 text-sm text-white/70">Elegant shopping experience</p>
-                    </div>
-                  </div>
-                </div>
+                <FashionShowcaseArt role={formData.role} fullname={formData.fullname} />
               </div>
             </div>
           </div>

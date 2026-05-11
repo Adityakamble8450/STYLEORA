@@ -61,3 +61,32 @@ export const userRegister = async (req, res) => {
 
 
 }
+
+export const userLogin = async (req , res) =>{
+    const {email , password} = req.body
+
+    try{
+        const userFound = await UserAuth.findOne({ email })
+
+        if(!userFound){
+            return res.status(400).json({
+                message : 'User not found please Register first'
+            })
+        }
+
+        const isPasswordCorrect = await userFound.comparePassword(password)
+
+        if(!isPasswordCorrect){
+            return res.status(400).json({
+                message : 'Invalid password'
+            })
+        }
+
+        await tokenSend(userFound, res, 'User logged in successfully')
+
+    }catch (error) {
+        res.status(400).json({
+            message: error.message
+        })
+    }
+}

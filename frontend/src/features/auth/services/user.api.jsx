@@ -18,3 +18,18 @@ export const registerUser = async (payload) => {
     throw new Error(message)
   }
 }
+
+export const loginUser = async (payload) =>{
+  try {
+    const response = await api.post('/login' , payload)
+    return response.data
+  } catch (error) {
+     const message =
+      error.response?.data?.message ||
+      error.response?.data?.errors?.[0]?.msg ||
+      'User Login failed.'
+
+    throw new Error(message)
+    
+  }
+}

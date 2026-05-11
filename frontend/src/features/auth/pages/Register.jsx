@@ -1,27 +1,91 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import useAuth from '../hook/Useauth'
 import { useNavigate } from 'react-router'
 
 const InputIcon = ({ children }) => (
-  <span className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-stone-400">
+  <span className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-stone-400 transition-colors duration-200">
     {children}
   </span>
 )
 
-const TextInput = ({ icon, rightIcon, className = '', ...props }) => (
+const TextInput = ({ icon, rightIcon, className = '', error, isValid, ...props }) => (
   <label className="group relative block">
     <InputIcon>{icon}</InputIcon>
     <input
       {...props}
-      className={`h-13 w-full rounded-2xl border border-stone-200/80 bg-white/90 pl-12 pr-12 text-sm text-stone-800 outline-none transition duration-200 placeholder:text-stone-400 focus:border-amber-600 focus:bg-white focus:shadow-[0_0_0_4px_rgba(180,119,36,0.08)] ${className}`}
+      className={`h-13 w-full rounded-2xl border bg-white/90 pl-12 pr-12 text-sm text-stone-800 outline-none transition duration-200 placeholder:text-stone-400 focus:bg-white ${
+        error 
+          ? 'border-red-300 focus:border-red-500 focus:shadow-[0_0_0_4px_rgba(239,68,68,0.08)]' 
+          : isValid && props.value
+          ? 'border-green-300 focus:border-green-500 focus:shadow-[0_0_0_4px_rgba(34,197,94,0.08)]'
+          : 'border-stone-200/80 focus:border-amber-600 focus:shadow-[0_0_0_4px_rgba(180,119,36,0.08)]'
+      } ${className}`}
     />
-    {rightIcon ? (
+    {error && (
+      <span className="absolute right-5 top-1/2 -translate-y-1/2 text-red-500 text-lg">✕</span>
+    )}
+    {isValid && props.value && !error && (
+      <span className="absolute right-5 top-1/2 -translate-y-1/2 text-green-500 text-lg">✓</span>
+    )}
+    {rightIcon && !error && !(isValid && props.value) ? (
       <span className="absolute right-5 top-1/2 -translate-y-1/2 text-stone-400">
         {rightIcon}
       </span>
     ) : null}
   </label>
 )
+
+const PasswordStrengthIndicator = ({ password }) => {
+  const getStrength = () => {
+    let strength = 0
+    if (!password) return { level: 0, label: '', color: '' }
+    
+    if (password.length >= 8) strength++
+    if (password.length >= 12) strength++
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++
+    if (/[0-9]/.test(password)) strength++
+    if (/[^a-zA-Z0-9]/.test(password)) strength++
+    
+    const levels = [
+      { level: 0, label: '', color: '' },
+      { level: 1, label: 'Weak', color: 'bg-red-500' },
+      { level: 2, label: 'Fair', color: 'bg-orange-500' },
+      { level: 3, label: 'Good', color: 'bg-yellow-500' },
+      { level: 4, label: 'Strong', color: 'bg-lime-500' },
+      { level: 5, label: 'Very Strong', color: 'bg-green-500' }
+    ]
+    
+    return levels[Math.min(strength, 5)]
+  }
+
+  const strength = getStrength()
+  
+  if (!password) return null
+  
+  return (
+    <div className="mt-2 flex items-center gap-2">
+      <div className="flex gap-1 flex-1">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div
+            key={i}
+            className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
+              i <= strength.level ? strength.color : 'bg-stone-200'
+            }`}
+          />
+        ))}
+      </div>
+      <span className={`text-xs font-semibold ${
+        strength.level === 5 ? 'text-green-600' :
+        strength.level === 4 ? 'text-lime-600' :
+        strength.level === 3 ? 'text-yellow-600' :
+        strength.level === 2 ? 'text-orange-600' :
+        'text-red-600'
+      }`}>
+        {strength.label}
+      </span>
+    </div>
+  )
+}
 
 const GoogleButton = () => (
   <button
@@ -180,7 +244,19 @@ const FashionShowcaseArt = ({ role, fullname }) => {
   )
 }
 
-const navigate = useNavigate
+const validateEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return emailRegex.test(email)
+}
+
+const validatePhone = (phone) => {
+  const phoneRegex = /^[\d\s+\-()]+$/.test(phone) && phone.replace(/\D/g, '').length >= 10
+  return phoneRegex
+}
+
+const validatePassword = (password) => {
+  return password.length >= 8
+}
 
 const initialFormData = {
   fullname: '',
@@ -192,21 +268,87 @@ const initialFormData = {
   agreeToTerms: false,
 }
 
+const initialFieldErrors = {
+  fullname: '',
+  email: '',
+  contact: '',
+  password: '',
+  confirmPassword: '',
+}
+
 const Register = () => {
+  const navigate = useNavigate()
   const [formData, setFormData] = useState(initialFormData)
+  const [fieldErrors, setFieldErrors] = useState(initialFieldErrors)
+  const [touched, setTouched] = useState({})
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [submitError, setSubmitError] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
   const { handleRegister, loading, error } = useAuth()
+
+  const validateField = (name, value) => {
+    let errorMsg = ''
+    
+    switch (name) {
+      case 'fullname':
+        if (!value.trim()) errorMsg = 'Full name is required'
+        else if (value.trim().split(' ').length < 2) errorMsg = 'Please enter your full name'
+        break
+      case 'email':
+        if (!value.trim()) errorMsg = 'Email is required'
+        else if (!validateEmail(value)) errorMsg = 'Please enter a valid email'
+        break
+      case 'contact':
+        if (!value.trim()) errorMsg = 'Contact number is required'
+        else if (!validatePhone(value)) errorMsg = 'Please enter a valid phone number'
+        break
+      case 'password':
+        if (!value) errorMsg = 'Password is required'
+        else if (!validatePassword(value)) errorMsg = 'Password must be at least 8 characters'
+        break
+      case 'confirmPassword':
+        if (!value) errorMsg = 'Please confirm your password'
+        else if (value !== formData.password) errorMsg = 'Passwords do not match'
+        break
+      default:
+        break
+    }
+    
+    return errorMsg
+  }
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target
-
+    
     setFormData((current) => ({
       ...current,
       [name]: type === 'checkbox' ? checked : value,
     }))
+
+    if (touched[name]) {
+      const error = validateField(name, value)
+      setFieldErrors((current) => ({
+        ...current,
+        [name]: error,
+      }))
+    }
   }
+
+  const handleBlur = (event) => {
+    const { name, value } = event.target
+    setTouched((current) => ({
+      ...current,
+      [name]: true,
+    }))
+
+    const error = validateField(name, value)
+    setFieldErrors((current) => ({
+      ...current,
+      [name]: error,
+    }))
+  }
+
 
   const updateRole = (role) => {
     setFormData((current) => ({
@@ -218,9 +360,25 @@ const Register = () => {
   const handleSubmit = async (event) => {
     event.preventDefault()
     setSubmitError('')
+    setSuccessMessage('')
 
-    if (formData.password !== formData.confirmPassword) {
-      setSubmitError('Passwords do not match.')
+    // Validate all fields
+    const newErrors = {}
+    Object.keys(initialFieldErrors).forEach((field) => {
+      const error = validateField(field, formData[field])
+      if (error) newErrors[field] = error
+    })
+
+    if (Object.keys(newErrors).length > 0) {
+      setFieldErrors(newErrors)
+      setTouched({
+        fullname: true,
+        email: true,
+        contact: true,
+        password: true,
+        confirmPassword: true,
+      })
+      setSubmitError('Please fix the errors above before submitting.')
       return
     }
 
@@ -238,12 +396,15 @@ const Register = () => {
         role: formData.role,
       })
 
+      setSuccessMessage('Account created successfully! Redirecting...')
       setFormData(initialFormData)
+      setFieldErrors(initialFieldErrors)
+      setTouched({})
+      setTimeout(() => navigate('/'), 2000)
     } catch (requestError) {
-      setSubmitError(requestError.message)
+      setSubmitError(requestError.message || 'Failed to create account. Please try again.')
     }
   }
-  navigate('/')
 
   return (
     <section className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(221,170,109,0.22),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(194,132,55,0.18),_transparent_24%),linear-gradient(135deg,_#f8f4ee_0%,_#f3ede4_45%,_#ede4d7_100%)] px-4 py-5 sm:px-6 lg:px-8">
@@ -306,98 +467,139 @@ const Register = () => {
 
               <form className="space-y-4" onSubmit={handleSubmit}>
                 <div className="grid gap-4 md:grid-cols-2">
-                  <TextInput
-                    name="fullname"
-                    type="text"
-                    placeholder="Full Name"
-                    value={formData.fullname}
-                    onChange={handleChange}
-                    icon={
-                      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                        <path d="M20 21a8 8 0 0 0-16 0" />
-                        <circle cx="12" cy="7" r="4" />
-                      </svg>
-                    }
-                  />
-                  <TextInput
-                    name="email"
-                    type="email"
-                    placeholder="Email Address"
-                    value={formData.email}
-                    onChange={handleChange}
-                    icon={
-                      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                        <path d="M4 6h16v12H4z" />
-                        <path d="m4 7 8 6 8-6" />
-                      </svg>
-                    }
-                  />
+                  <div>
+                    <TextInput
+                      name="fullname"
+                      type="text"
+                      placeholder="Full Name"
+                      value={formData.fullname}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.fullname && fieldErrors.fullname}
+                      isValid={touched.fullname && !fieldErrors.fullname && formData.fullname}
+                      icon={
+                        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                          <path d="M20 21a8 8 0 0 0-16 0" />
+                          <circle cx="12" cy="7" r="4" />
+                        </svg>
+                      }
+                    />
+                    {touched.fullname && fieldErrors.fullname && (
+                      <p className="mt-1 text-xs text-red-600">{fieldErrors.fullname}</p>
+                    )}
+                  </div>
+                  <div>
+                    <TextInput
+                      name="email"
+                      type="email"
+                      placeholder="Email Address"
+                      value={formData.email}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      error={touched.email && fieldErrors.email}
+                      isValid={touched.email && !fieldErrors.email && formData.email}
+                      icon={
+                        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                          <path d="M4 6h16v12H4z" />
+                          <path d="m4 7 8 6 8-6" />
+                        </svg>
+                      }
+                    />
+                    {touched.email && fieldErrors.email && (
+                      <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
+                    )}
+                  </div>
                 </div>
 
-                <TextInput
-                  name="contact"
-                  type="tel"
-                  placeholder="Contact Number"
-                  value={formData.contact}
-                  onChange={handleChange}
-                  icon={
-                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.35 1.78.68 2.62a2 2 0 0 1-.45 2.11L8.06 9.94a16 16 0 0 0 6 6l1.49-1.28a2 2 0 0 1 2.11-.45c.84.33 1.72.56 2.62.68A2 2 0 0 1 22 16.92Z" />
-                    </svg>
-                  }
-                />
-
-                <TextInput
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  icon={
-                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                      <rect x="5" y="11" width="14" height="10" rx="2" />
-                      <path d="M8 11V8a4 4 0 1 1 8 0v3" />
-                    </svg>
-                  }
-                  rightIcon={
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((value) => !value)}
-                      className="cursor-pointer text-stone-400 transition hover:text-amber-700"
-                    >
+                <div>
+                  <TextInput
+                    name="contact"
+                    type="tel"
+                    placeholder="Contact Number"
+                    value={formData.contact}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={touched.contact && fieldErrors.contact}
+                    isValid={touched.contact && !fieldErrors.contact && formData.contact}
+                    icon={
                       <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                        <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
-                        <circle cx="12" cy="12" r="3" />
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.35 1.78.68 2.62a2 2 0 0 1-.45 2.11L8.06 9.94a16 16 0 0 0 6 6l1.49-1.28a2 2 0 0 1 2.11-.45c.84.33 1.72.56 2.62.68A2 2 0 0 1 22 16.92Z" />
                       </svg>
-                    </button>
-                  }
-                />
+                    }
+                  />
+                  {touched.contact && fieldErrors.contact && (
+                    <p className="mt-1 text-xs text-red-600">{fieldErrors.contact}</p>
+                  )}
+                </div>
 
-                <TextInput
-                  name="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  placeholder="Confirm Password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  icon={
-                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                      <rect x="5" y="11" width="14" height="10" rx="2" />
-                      <path d="M8 11V8a4 4 0 1 1 8 0v3" />
-                    </svg>
-                  }
-                  rightIcon={
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword((value) => !value)}
-                      className="cursor-pointer text-stone-400 transition hover:text-amber-700"
-                    >
+                <div>
+                  <TextInput
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={touched.password && fieldErrors.password}
+                    isValid={touched.password && !fieldErrors.password && formData.password}
+                    icon={
                       <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                        <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
-                        <circle cx="12" cy="12" r="3" />
+                        <rect x="5" y="11" width="14" height="10" rx="2" />
+                        <path d="M8 11V8a4 4 0 1 1 8 0v3" />
                       </svg>
-                    </button>
-                  }
-                />
+                    }
+                    rightIcon={
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((value) => !value)}
+                        className="cursor-pointer text-stone-400 transition hover:text-amber-700"
+                      >
+                        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      </button>
+                    }
+                  />
+                  {touched.password && fieldErrors.password && (
+                    <p className="mt-1 text-xs text-red-600">{fieldErrors.password}</p>
+                  )}
+                  <PasswordStrengthIndicator password={formData.password} />
+                </div>
+
+                <div>
+                  <TextInput
+                    name="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    placeholder="Confirm Password"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={touched.confirmPassword && fieldErrors.confirmPassword}
+                    isValid={touched.confirmPassword && !fieldErrors.confirmPassword && formData.confirmPassword}
+                    icon={
+                      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                        <rect x="5" y="11" width="14" height="10" rx="2" />
+                        <path d="M8 11V8a4 4 0 1 1 8 0v3" />
+                      </svg>
+                    }
+                    rightIcon={
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword((value) => !value)}
+                        className="cursor-pointer text-stone-400 transition hover:text-amber-700"
+                      >
+                        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      </button>
+                    }
+                  />
+                  {touched.confirmPassword && fieldErrors.confirmPassword && (
+                    <p className="mt-1 text-xs text-red-600">{fieldErrors.confirmPassword}</p>
+                  )}
+                </div>
 
                 <div className="pt-2">
                   <p className="mb-3 text-base font-medium text-stone-700">Choose your role</p>
@@ -431,38 +633,57 @@ const Register = () => {
                   </div>
                 </div>
 
-                <label className="flex items-start gap-3 pt-1 text-sm leading-6 text-stone-500">
+                <label className="flex items-start gap-3 pt-1 text-sm leading-6 text-stone-500 cursor-pointer hover:text-stone-600 transition">
                   <input
                     name="agreeToTerms"
                     type="checkbox"
                     checked={formData.agreeToTerms}
                     onChange={handleChange}
-                    className="mt-0.5 h-4 w-4 rounded border-stone-300 accent-amber-700"
+                    className="mt-0.5 h-4 w-4 rounded border-stone-300 accent-amber-700 cursor-pointer"
                   />
                   <span>
                     I agree to the{' '}
-                    <a href="/terms" className="font-medium text-amber-700 hover:text-amber-800">
+                    <a href="/terms" className="font-medium text-amber-700 hover:text-amber-800 transition">
                       Terms &amp; Conditions
                     </a>{' '}
                     and{' '}
-                    <a href="/privacy" className="font-medium text-amber-700 hover:text-amber-800">
+                    <a href="/privacy" className="font-medium text-amber-700 hover:text-amber-800 transition">
                       Privacy Policy
                     </a>
                   </span>
                 </label>
 
-                {submitError || error ? (
-                  <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                    {submitError || error}
-                  </p>
-                ) : null}
+                {submitError && (
+                  <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-start gap-2 animate-pulse">
+                    <svg className="h-5 w-5 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 8v4m0 4v.01" stroke="white" strokeWidth="2" fill="none" />
+                    </svg>
+                    <span>{submitError}</span>
+                  </div>
+                )}
+
+                {successMessage && (
+                  <div className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 flex items-start gap-2 animate-pulse">
+                    <svg className="h-5 w-5 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M10 15.17L6.413 11.58a1 1 0 00-1.413 1.413l4.413 4.414a1 1 0 001.414 0l7.071-7.071a1 1 0 00-1.414-1.414L10 15.17z" />
+                    </svg>
+                    <span>{successMessage}</span>
+                  </div>
+                )}
 
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="mt-2 inline-flex h-13 w-full items-center justify-center rounded-2xl bg-gradient-to-r from-amber-700 via-amber-600 to-amber-700 px-6 text-base font-semibold text-white shadow-[0_14px_35px_rgba(180,119,36,0.35)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(180,119,36,0.38)] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
+                  disabled={loading || !formData.agreeToTerms}
+                  className="mt-2 inline-flex h-13 w-full items-center justify-center rounded-2xl bg-gradient-to-r from-amber-700 via-amber-600 to-amber-700 px-6 text-base font-semibold text-white shadow-[0_14px_35px_rgba(180,119,36,0.35)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(180,119,36,0.38)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 gap-2"
                 >
-                  {loading ? 'Creating Account...' : 'Create Account'}
+                  {loading && (
+                    <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10" opacity="0.25" />
+                      <path d="M12 2a10 10 0 0 1 0 20" />
+                    </svg>
+                  )}
+                  <span>{loading ? 'Creating Account...' : 'Create Account'}</span>
                 </button>
               </form>
             </div>

@@ -22,7 +22,8 @@ const tokenSend = async (user, res, message) => {
             id: user._id,
             email: user.email,
             fullname: user.fullname,
-            contact: user.contact
+            contact: user.contact,
+            role: user.role
         }
     })
 }
@@ -85,6 +86,47 @@ export const userLogin = async (req , res) =>{
         await tokenSend(userFound, res, 'User logged in successfully')
 
     }catch (error) {
+        res.status(400).json({
+            message: error.message
+        })
+    }
+}
+
+export const googleOAuthCallback = async (req, res) => {
+    try {
+        const user = req.user
+        
+        if (!user) {
+            return res.status(401).json({
+                message: 'Authentication failed'
+            })
+        }
+
+        const token = jwt.sign(
+            { user: user._id },
+            config.JWT_SECRET,
+            { expiresIn: '7d' }
+        )
+
+        res.cookie('token', token, {
+            httpOnly: true,
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            sameSite: 'lax'
+        })
+
+        const userPayload = encodeURIComponent(JSON.stringify({
+            id: user._id,
+            email: user.email,
+            fullname: user.fullname,
+            contact: user.contact,
+            role: user.role,
+            profilePicture: user.profilePicture,
+        }))
+
+        // Redirect to frontend with token and a small user snapshot
+        res.redirect(`http://localhost:5173/auth-success?token=${token}&user=${userPayload}`)
+
+    } catch (error) {
         res.status(400).json({
             message: error.message
         })

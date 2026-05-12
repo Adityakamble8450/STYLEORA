@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import useAuth from '../hook/Useauth'
 import { useNavigate } from 'react-router'
+import { getGoogleAuthUrl } from '../services/user.api'
 
 
 const InputIcon = ({ children }) => (
@@ -24,9 +25,10 @@ const TextInput = ({ icon, rightIcon, className = '', ...props }) => (
   </label>
 )
 
-const GoogleButton = () => (
+const GoogleButton = ({ onClick }) => (
   <button
     type="button"
+    onClick={onClick}
     className="inline-flex h-13 w-full items-center justify-center gap-3 rounded-2xl border border-stone-200 bg-white px-5 text-sm font-semibold text-stone-700 shadow-sm transition duration-200 hover:border-stone-300 hover:bg-stone-50"
   >
     <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
@@ -105,6 +107,9 @@ const Login = () => {
   const [submitError, setSubmitError] = useState('')
   const navigate = useNavigate()
   const { handleLogin, loading, error } = useAuth()
+  const handleGoogleLogin = () => {
+    window.location.assign(getGoogleAuthUrl())
+  }
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -187,7 +192,7 @@ const Login = () => {
               </div>
 
               <div className="mt-7">
-                <GoogleButton />
+                <GoogleButton onClick={handleGoogleLogin} />
                 <div className="my-5 flex items-center gap-3 text-xs font-medium uppercase tracking-[0.28em] text-stone-400">
                   <span className="h-px flex-1 bg-stone-200" />
                   Or continue with email

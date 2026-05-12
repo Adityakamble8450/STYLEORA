@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import useAuth from '../hook/Useauth'
 import { useNavigate } from 'react-router'
+import { getGoogleAuthUrl } from '../services/user.api'
 
 const InputIcon = ({ children }) => (
   <span className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-stone-400 transition-colors duration-200">
@@ -87,9 +88,10 @@ const PasswordStrengthIndicator = ({ password }) => {
   )
 }
 
-const GoogleButton = () => (
+const GoogleButton = ({ onClick }) => (
   <button
     type="button"
+    onClick={onClick}
     className="inline-flex h-13 w-full items-center justify-center gap-3 rounded-2xl border border-stone-200 bg-white px-5 text-sm font-semibold text-stone-700 shadow-sm transition duration-200 hover:border-stone-300 hover:bg-stone-50"
   >
     <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
@@ -286,6 +288,9 @@ const Register = () => {
   const [submitError, setSubmitError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const { handleRegister, loading, error } = useAuth()
+  const handleGoogleRegister = () => {
+    window.location.assign(getGoogleAuthUrl())
+  }
 
   const validateField = (name, value) => {
     let errorMsg = ''
@@ -457,7 +462,7 @@ const Register = () => {
               </div>
 
               <div className="mt-7">
-                <GoogleButton />
+                <GoogleButton onClick={handleGoogleRegister} />
                 <div className="my-5 flex items-center gap-3 text-xs font-medium uppercase tracking-[0.28em] text-stone-400">
                   <span className="h-px flex-1 bg-stone-200" />
                   Or continue with email

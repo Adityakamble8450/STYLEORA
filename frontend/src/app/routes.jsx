@@ -1,6 +1,7 @@
 import {createBrowserRouter} from 'react-router'
 import Register from '../features/auth/pages/Register'
 import Login from '../features/auth/pages/Login'
+import AuthSuccess from '../features/auth/pages/AuthSuccess'
 
 const router = createBrowserRouter([
     {
@@ -15,6 +16,10 @@ const router = createBrowserRouter([
     {
         path : '/login' , 
         element : <Login/>
+    },
+    {
+        path : '/auth-success',
+        element : <AuthSuccess />
     }
 ])
 

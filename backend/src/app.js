@@ -6,6 +6,7 @@ import { config } from './config/config.js'
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
 import UserAuth from './models/user.auth.model.js'
 import UserAuthrouter from './routes/user.auth.route.js'
+import ProductRoutes from "./routes/product.routes.js";
 
 app.use(cors({
     origin: 'http://localhost:5173',
@@ -47,5 +48,6 @@ passport.use(new GoogleStrategy({
 }))
 
 app.use('/api/auth', UserAuthrouter)
+app.use('/api/products' ,  ProductRoutes)
 
 export default app

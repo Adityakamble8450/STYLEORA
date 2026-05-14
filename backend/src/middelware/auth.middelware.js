@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
-import { config } from "../src/config/config";
-import UserAuth from "../src/models/user.auth.model";
+import { config } from "../config/config.js";
+import UserAuth from "../models/user.auth.model.js";
 export const identifySeller = async (req, res, next) => {
-    const token = req.cookies.token
+    const token = req.cookies?.token
 
     if (!token) {
         return res.status(400).json({
@@ -11,7 +11,7 @@ export const identifySeller = async (req, res, next) => {
     }
     try {
         const decoded = jwt.verify(token, config.JWT_SECRET)
-        const user = await UserAuth.findById(decoded.id)
+        const user = await UserAuth.findById(decoded.user)
 
         if (!user) {
             return res.status(401).json({

@@ -1,7 +1,9 @@
 import express from "express";
 const app = express();
 import cors from 'cors'
+import cookieParser from "cookie-parser";
 import passport from 'passport'
+import multer from "multer";
 import { config } from './config/config.js'
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
 import UserAuth from './models/user.auth.model.js'
@@ -14,6 +16,7 @@ app.use(cors({
 }))
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use(passport.initialize())
 
 // Google OAuth Strategy
@@ -49,5 +52,24 @@ passport.use(new GoogleStrategy({
 
 app.use('/api/auth', UserAuthrouter)
 app.use('/api/products' ,  ProductRoutes)
+app.use((error, req, res, next) => {
+    if (error instanceof multer.MulterError) {
+        return res.status(400).json({
+            success: false,
+            message: error.code === 'LIMIT_FILE_COUNT'
+                ? 'You can upload up to 7 images at a time'
+                : error.message
+        })
+    }
+
+    if (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message || 'Request failed'
+        })
+    }
+
+    next()
+})
 
 export default app

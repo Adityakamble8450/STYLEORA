@@ -1,6 +1,6 @@
 import express from 'express'
 import { identifySeller } from '../middelware/auth.middelware.js'
-import { createProduct } from '../controller/products.controller.js'
+import { createProduct , getProducts } from '../controller/products.controller.js'
 import { createProductValidator } from '../validetors/product.validator.js'
 const ProductRoutes = express.Router()
 import multer from 'multer'
@@ -30,6 +30,8 @@ ProductRoutes.post(
   createProductValidator,
   createProduct
 )
+
+ProductRoutes.get('/seller' , identifySeller , getProducts)
 
 
 

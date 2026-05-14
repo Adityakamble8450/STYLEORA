@@ -1,9 +1,9 @@
 import { uploadFiles } from '../services/store.service.js'
 import ProductModel from '../models/products.model.js'
 
-export const createProduct = async (req , res) =>{
+export const createProduct = async (req, res) => {
     try {
-        const {title , description , price} = req.body
+        const { title, description, price } = req.body
         const seller = req.user
         const files = req.files || []
 
@@ -44,3 +44,33 @@ export const createProduct = async (req , res) =>{
         })
     }
 }
+
+export const getProducts = async (req, res) => {
+    const seller = req.user
+
+    if (!seller) {
+        return res.status(402).json({
+            message: 'only seller can accese this product',
+            success: false
+        })
+    }
+    try {
+        const products = await ProductModel.findById(seller.id)
+
+        res.status(201).json({
+            message: 'Product featch succesfully',
+            success: true,
+            products
+        })
+
+    } catch (error) {
+        console.log(error)
+        res.status(402).json({
+            message: 'error in featching products',
+            success: false
+        }
+        )
+
+    }
+}
+

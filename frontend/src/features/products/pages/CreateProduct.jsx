@@ -181,7 +181,7 @@ const CreateProduct = () => {
                       value={formData.title}
                       onChange={handleChange}
                       placeholder="Minimal leather weekender bag"
-                      className={`h-14 w-full rounded-2xl border bg-white/90 px-4 text-sm text-stone-800 outline-none transition duration-200 placeholder:text-stone-400 focus:bg-white ${
+                      className={`h-14 w-full rounded-2xl border bg-white/90 px-4 text-sm text-stone-900 outline-none transition duration-200 placeholder:text-stone-500 focus:bg-white ${
                         fieldErrors.title
                           ? 'border-red-300 focus:border-red-400 focus:shadow-[0_0_0_4px_rgba(248,113,113,0.08)]'
                           : 'border-stone-200/80 focus:border-amber-600 focus:shadow-[0_0_0_4px_rgba(180,119,36,0.08)]'
@@ -207,7 +207,7 @@ const CreateProduct = () => {
                         value={formData.price}
                         onChange={handleChange}
                         placeholder="2499"
-                        className={`h-14 w-full rounded-2xl border bg-white/90 pl-16 pr-4 text-sm text-stone-800 outline-none transition duration-200 placeholder:text-stone-400 focus:bg-white ${
+                        className={`h-14 w-full rounded-2xl border bg-white/90 pl-16 pr-4 text-sm text-stone-900 outline-none transition duration-200 placeholder:text-stone-500 focus:bg-white ${
                           fieldErrors.price
                             ? 'border-red-300 focus:border-red-400 focus:shadow-[0_0_0_4px_rgba(248,113,113,0.08)]'
                             : 'border-stone-200/80 focus:border-amber-600 focus:shadow-[0_0_0_4px_rgba(180,119,36,0.08)]'
@@ -229,7 +229,7 @@ const CreateProduct = () => {
                     value={formData.description}
                     onChange={handleChange}
                     placeholder="Describe the materials, feel, fit, and standout details that make this product special."
-                    className={`w-full rounded-[1.5rem] border bg-white/90 px-4 py-4 text-sm leading-6 text-stone-800 outline-none transition duration-200 placeholder:text-stone-400 focus:bg-white ${
+                    className={`w-full rounded-[1.5rem] border bg-white/90 px-4 py-4 text-sm leading-6 text-stone-900 outline-none transition duration-200 placeholder:text-stone-500 focus:bg-white ${
                       fieldErrors.description
                         ? 'border-red-300 focus:border-red-400 focus:shadow-[0_0_0_4px_rgba(248,113,113,0.08)]'
                         : 'border-stone-200/80 focus:border-amber-600 focus:shadow-[0_0_0_4px_rgba(180,119,36,0.08)]'
@@ -397,7 +397,7 @@ const CreateProduct = () => {
                         </p>
                       </div>
                       <div className="rounded-2xl border border-white/10 bg-white/95 px-4 py-3 text-right shadow-[0_16px_30px_rgba(52,27,8,0.1)]">
-                        <p className="text-xs uppercase tracking-[0.22em] text-stone-400">Status</p>
+                        <p className="text-xs uppercase tracking-[0.22em] text-stone-600">Status</p>
                         <p className="mt-1 text-sm font-semibold text-stone-900">Ready to publish</p>
                       </div>
                     </div>
@@ -406,7 +406,7 @@ const CreateProduct = () => {
               </div>
 
               <div className="rounded-[1.5rem] border border-white/10 bg-white/95 p-6 text-stone-900 shadow-[0_16px_30px_rgba(52,27,8,0.14)]">
-                <p className="text-xs uppercase tracking-[0.3em] text-stone-400">Listing Notes</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-stone-600">Listing Notes</p>
                 <div className="mt-4 space-y-4">
                   <div className="rounded-2xl border border-stone-200/80 bg-white p-4">
                     <p className="text-sm font-semibold text-stone-900">Use a title that scans quickly</p>

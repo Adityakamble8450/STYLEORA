@@ -39,3 +39,10 @@ export const getProducts = async () => {
     throw new Error(message)
   }
 }
+
+const productApi = {
+  createProduct,
+  getProducts,
+}
+
+export default productApi

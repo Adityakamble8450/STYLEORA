@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux'
-import { createProduct, getProducts } from '../services/product.api'
+import productApi from '../services/product.api.jsx'
 import { setError, setLoading, setProducts } from '../state/products.slice'
 
 export const Useproduct = () => {
@@ -11,7 +11,7 @@ export const Useproduct = () => {
     dispatch(setError(null))
 
     try {
-      const data = await createProduct(formData)
+      const data = await productApi.createProduct(formData)
       dispatch(setProducts([data.product, ...products]))
       return data.product
     } catch (requestError) {
@@ -27,7 +27,7 @@ export const Useproduct = () => {
     dispatch(setError(null))
 
     try {
-      const data = await getProducts()
+      const data = await productApi.getProducts()
       dispatch(setProducts(data.products || []))
       return data.products || []
     } catch (requestError) {

@@ -55,18 +55,18 @@ export const getProducts = async (req, res) => {
         })
     }
     try {
-        const products = await ProductModel.findById(seller.id)
+        const products = await ProductModel.find({ seller: seller.id }).sort({ createdAt: -1 })
 
-        res.status(201).json({
-            message: 'Product featch succesfully',
+        res.status(200).json({
+            message: 'Products fetched successfully',
             success: true,
             products
         })
 
     } catch (error) {
         console.log(error)
-        res.status(402).json({
-            message: 'error in featching products',
+        res.status(500).json({
+            message: 'Error in fetching products',
             success: false
         }
         )
@@ -74,3 +74,21 @@ export const getProducts = async (req, res) => {
     }
 }
 
+export const getAllProducts = async (req , res) =>{
+    try{
+        const allProduct = await ProductModel.find().sort({ createdAt: -1 })
+        res.status(200).json({
+            message : 'All Product featch succesfully' ,
+            success : true ,
+            products: allProduct,
+            allProduct
+        })
+    }catch(error) {
+        res.status(401).json({
+            message : error.message ,
+            success : false
+        })
+
+    }
+
+}

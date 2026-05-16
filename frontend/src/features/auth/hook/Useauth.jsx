@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux'
-import { setError, setLoading, setUser } from '../state/auth.slice'
+import { setError, setLoading, setToken, setUser } from '../state/auth.slice'
 import { registerUser , loginUser } from '../services/user.api'
 import { saveAuthSession } from '../services/auth.session'
 
@@ -20,6 +20,7 @@ const useAuth = () => {
       })
 
       dispatch(setUser(data.user))
+      dispatch(setToken(data.token))
       saveAuthSession({ token: data.token, user: data.user })
       return data
     } catch (requestError) {
@@ -40,6 +41,7 @@ const useAuth = () => {
       password
     })
     dispatch(setUser(data.user))
+    dispatch(setToken(data.token))
     saveAuthSession({ token: data.token, user: data.user })
     return data
     }catch (requestError) {

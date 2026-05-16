@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
 import useAuth from '../hook/Useauth'
-import { useNavigate } from 'react-router'
+import { Navigate, useNavigate } from 'react-router'
 import { getGoogleAuthUrl } from '../services/user.api'
+import { useSelector } from 'react-redux'
+import { getDefaultRouteForUser } from '../services/auth.redirect'
 
 const InputIcon = ({ children }) => (
   <span className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-stone-500">
@@ -109,6 +111,11 @@ const Login = () => {
   const [submitError, setSubmitError] = useState('')
   const navigate = useNavigate()
   const { handleLogin, loading, error } = useAuth()
+  const user = useSelector((state) => state.auth.user)
+
+  if (user) {
+    return <Navigate to={getDefaultRouteForUser(user)} replace />
+  }
 
   const handleGoogleLogin = () => {
     window.location.assign(getGoogleAuthUrl())
@@ -133,12 +140,12 @@ const Login = () => {
     }
 
     try {
-      await handleLogin({
+      const data = await handleLogin({
         email: formData.email,
         password: formData.password,
       })
       setFormData(initialFormData)
-      navigate('/')
+      navigate(getDefaultRouteForUser(data.user), { replace: true })
     } catch (requestError) {
       setSubmitError(requestError.message || 'Login failed. Please try again.')
     }

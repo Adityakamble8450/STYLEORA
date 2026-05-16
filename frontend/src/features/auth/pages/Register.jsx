@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
 import useAuth from '../hook/Useauth'
-import { useNavigate } from 'react-router'
+import { Navigate, useNavigate } from 'react-router'
 import { getGoogleAuthUrl } from '../services/user.api'
+import { useSelector } from 'react-redux'
+import { getDefaultRouteForUser } from '../services/auth.redirect'
 
 const InputIcon = ({ children }) => (
   <span className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-stone-500 transition-colors duration-200">
@@ -250,6 +252,7 @@ const initialFieldErrors = {
 
 const Register = () => {
   const navigate = useNavigate()
+  const user = useSelector((state) => state.auth.user)
   const [formData, setFormData] = useState(initialFormData)
   const [fieldErrors, setFieldErrors] = useState(initialFieldErrors)
   const [touched, setTouched] = useState({})
@@ -257,7 +260,11 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
-  const { handleRegister, loading, error } = useAuth()
+  const { handleRegister, loading } = useAuth()
+
+  if (user) {
+    return <Navigate to={getDefaultRouteForUser(user)} replace />
+  }
 
   const handleGoogleRegister = () => {
     window.location.assign(getGoogleAuthUrl())
@@ -363,7 +370,7 @@ const Register = () => {
     }
 
     try {
-      await handleRegister({
+      const data = await handleRegister({
         email: formData.email,
         contact: formData.contact,
         fullname: formData.fullname,
@@ -375,7 +382,8 @@ const Register = () => {
       setFormData(initialFormData)
       setFieldErrors(initialFieldErrors)
       setTouched({})
-      setTimeout(() => navigate('/'), 2000)
+      const nextRoute = data.user?.role === 'seller' ? '/seller/dashboard' : getDefaultRouteForUser(data.user)
+      setTimeout(() => navigate(nextRoute, { replace: true }), 1200)
     } catch (requestError) {
       setSubmitError(requestError.message || 'Failed to create account. Please try again.')
     }

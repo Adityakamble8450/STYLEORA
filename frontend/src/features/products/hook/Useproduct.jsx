@@ -1,44 +1,62 @@
-import { useDispatch, useSelector } from 'react-redux'
-import productApi from '../services/product.api.jsx'
-import { setError, setLoading, setProducts } from '../state/products.slice'
+import { useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import productApi from "../services/product.api.jsx";
+import { setError, setLoading, setProducts } from "../state/products.slice";
 
 export const Useproduct = () => {
-  const dispatch = useDispatch()
-  const { loading, error, products } = useSelector((state) => state.product)
+  const dispatch = useDispatch();
+  const { loading, error, products } = useSelector((state) => state.product);
 
-  const handleCreateProduct = async (formData) => {
-    dispatch(setLoading(true))
-    dispatch(setError(null))
-
-    try {
-      const data = await productApi.createProduct(formData)
-      dispatch(setProducts([data.product, ...products]))
-      return data.product
-    } catch (requestError) {
-      dispatch(setError(requestError.message))
-      throw requestError
-    } finally {
-      dispatch(setLoading(false))
-    }
-  }
-
-  const handleGetProducts = async () => {
-    dispatch(setLoading(true))
-    dispatch(setError(null))
+  const handleCreateProduct = useCallback(async (formData) => {
+    dispatch(setLoading(true));
+    dispatch(setError(null));
 
     try {
-      const data = await productApi.getProducts()
-      dispatch(setProducts(data.products || []))
-      return data.products || []
+      const data = await productApi.createProduct(formData);
+      dispatch(setProducts([data.product, ...products]));
+      return data.product;
     } catch (requestError) {
-      dispatch(setError(requestError.message))
-      throw requestError
+      dispatch(setError(requestError.message));
+      throw requestError;
     } finally {
-      dispatch(setLoading(false))
+      dispatch(setLoading(false));
     }
-  }
+  }, [dispatch, products]);
 
-  return { handleCreateProduct, handleGetProducts, loading, error, products }
-}
+  const handleGetProducts = useCallback(async () => {
+    dispatch(setLoading(true));
+    dispatch(setError(null));
 
-export default Useproduct
+    try {
+      const data = await productApi.getProducts();
+      dispatch(setProducts(data.products || []));
+      return data.products || [];
+    } catch (requestError) {
+      dispatch(setError(requestError.message));
+      throw requestError;
+    } finally {
+      dispatch(setLoading(false));
+    }
+  }, [dispatch]);
+
+  const handleGetAllProducts = useCallback(async () => {
+    dispatch(setLoading(true));
+    dispatch(setError(null));
+
+    try {
+      const data = await productApi.getAllProducts();
+      const productList = data.products || data.allProduct || [];
+      dispatch(setProducts(productList));
+      return productList;
+    } catch (requestError) {
+      dispatch(setError(requestError.message));
+      throw requestError;
+    } finally {
+      dispatch(setLoading(false));
+    }
+  }, [dispatch]);
+
+  return { handleCreateProduct, handleGetProducts, handleGetAllProducts, loading, error, products };
+};
+
+export default Useproduct;

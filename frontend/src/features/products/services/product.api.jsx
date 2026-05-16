@@ -40,9 +40,24 @@ export const getProducts = async () => {
   }
 }
 
+export const getAllProducts = async() =>{
+  try {
+    const response = await api.get('/allproducts')
+    return response.data
+    
+  } catch (error) {
+    const message =
+      error.response?.data?.message ||
+      error.response?.data?.errors?.[0]?.msg ||
+      'Unable to fetch Allproducts.'
+    throw new Error(message)
+  }
+}
+
 const productApi = {
   createProduct,
   getProducts,
+  getAllProducts
 }
 
 export default productApi

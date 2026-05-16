@@ -1,14 +1,16 @@
 import express from 'express'
 import UserAuth from '../models/user.auth.model.js'
 import { registerUserValidator, loginUserValidator } from '../validetors/user.auth.validator.js'
-import { userRegister, userLogin, googleOAuthCallback } from '../controller/user.auth.controller.js'
+import { userRegister, userLogin, googleOAuthCallback , getme } from '../controller/user.auth.controller.js'
 import passport from 'passport'
+import { indentifyUser } from '../middelware/auth.middelware.js'
 
 
 const route = express.Router()
 
 route.post('/register', registerUserValidator, userRegister)
 route.post('/login', loginUserValidator, userLogin)
+route.get('/me' ,  indentifyUser , getme)
 
 // Google OAuth routes
 route.get('/google', passport.authenticate('google', { scope: ['profile', 'email'], session: false }))

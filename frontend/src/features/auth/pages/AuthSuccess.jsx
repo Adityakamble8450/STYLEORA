@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux'
 import { useLocation, useNavigate } from 'react-router'
 import { setToken, setUser } from '../state/auth.slice'
 import { saveAuthSession } from '../services/auth.session'
+import { getDefaultRouteForUser } from '../services/auth.redirect'
 
 const parseUserFromQuery = (searchParams) => {
   const rawUser = searchParams.get('user')
@@ -63,7 +64,7 @@ const AuthSuccess = () => {
     setStatus('Sign-in complete. Redirecting to your dashboard...')
 
     const timeoutId = window.setTimeout(() => {
-      navigate('/', { replace: true })
+      navigate(getDefaultRouteForUser(user), { replace: true })
     }, 900)
 
     return () => window.clearTimeout(timeoutId)

@@ -7,6 +7,7 @@ import Dashboard from '../features/products/pages/Dashboard'
 import Protected from '../componants/Protected'
 import AppRedirect from '../componants/AppRedirect'
 import Home from '../features/products/pages/Home'
+import ProductDetails from '../features/products/pages/ProductDetails'
 
 const router = createBrowserRouter([
     {
@@ -41,6 +42,10 @@ const router = createBrowserRouter([
             <Dashboard />
           </Protected>
         )
+    },
+    {
+        path  : '/details/:productId' ,
+        element : <ProductDetails/>
     }
 ])
 

@@ -5,6 +5,7 @@ import { clearAuthState } from '../../auth/state/auth.slice'
 import { clearAuthSession } from '../../auth/services/auth.session'
 import Useproduct from '../hook/Useproduct'
 
+
 const carouselImages = [
   {
     image:
@@ -402,7 +403,8 @@ const Home = () => {
             ) : products.length ? (
               <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                 {products.map((product, index) => (
-                  <article
+                  <Link
+                   to={`/details/${product._id}`}
                     key={product._id}
                     className="group reveal-card overflow-hidden rounded-[1.8rem] border border-white/80 bg-white/75 shadow-[0_18px_42px_rgba(70,39,10,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_50px_rgba(70,39,10,0.12)]"
                     style={{ animationDelay: `${index * 70}ms` }}
@@ -440,7 +442,7 @@ const Home = () => {
 
                       <p className="mt-4 line-clamp-3 text-sm leading-7 text-stone-700">{product.description}</p>
                     </div>
-                  </article>
+                  </Link>
                 ))}
               </div>
             ) : (

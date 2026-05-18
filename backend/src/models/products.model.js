@@ -28,6 +28,7 @@ const productSchema = new mongoose.Schema(
         min: 0,
       },
     },
+    
     images: [
       {
         url: {
@@ -36,7 +37,49 @@ const productSchema = new mongoose.Schema(
         },
       },
     ],
+    variants: [
+      {
+        sku: {
+          type: String,
+          trim: true,
+        },
+        attributes: {
+          type: Map,
+          of: String,
+        },
+        price: {
+          currency: {
+            type: String,
+            enum: ["USD", "GBP", "INR"],
+            default: "INR",
+          },
+          amount: {
+            type: Number,
+            min: 0,
+          },
+        },
+        stock: {
+          type: Number,
+          required: true,
+          default: 0,
+          min: 0,
+        },
+        images: [
+          {
+            url: {
+              type: String,
+              required: true,
+            },
+          },
+        ],
+        isActive: {
+          type: Boolean,
+          default: true,
+        },
+      },
+    ],
   },
+
   {
     timestamps: true,
   }

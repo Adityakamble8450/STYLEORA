@@ -1,63 +1,77 @@
-import axios from 'axios'
+import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/products'
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/products";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
-})
+});
 
 export const createProduct = async (formData) => {
   try {
-    const response = await api.post('/create', formData, {
+    const response = await api.post("/create", formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        "Content-Type": "multipart/form-data",
       },
-    })
+    });
 
-    return response.data
+    return response.data;
   } catch (error) {
     const message =
       error.response?.data?.message ||
       error.response?.data?.errors?.[0]?.msg ||
-      'Product creation failed.'
+      "Product creation failed.";
 
-    throw new Error(message)
+    throw new Error(message);
   }
-}
+};
 
 export const getProducts = async () => {
   try {
-    const response = await api.get('/seller')
-    return response.data
+    const response = await api.get("/seller");
+    return response.data;
   } catch (error) {
     const message =
       error.response?.data?.message ||
       error.response?.data?.errors?.[0]?.msg ||
-      'Unable to fetch products.'
+      "Unable to fetch products.";
 
-    throw new Error(message)
+    throw new Error(message);
   }
-}
+};
 
-export const getAllProducts = async() =>{
+export const getAllProducts = async () => {
   try {
-    const response = await api.get('/allproducts')
-    return response.data
-    
+    const response = await api.get("/allproducts");
+    return response.data;
   } catch (error) {
     const message =
       error.response?.data?.message ||
       error.response?.data?.errors?.[0]?.msg ||
-      'Unable to fetch Allproducts.'
-    throw new Error(message)
+      "Unable to fetch Allproducts.";
+    throw new Error(message);
   }
-}
+};
+
+export const getProductByid = async (productId) => {
+  try {
+    const response = await api.get(`/details/${productId}`);
+    return response.data;
+  } catch (error) {
+    const message =
+      error.response?.data?.message ||
+      error.response?.data?.errors?.[0]?.msg ||
+      "Unable to fetch product.";
+    throw new Error(message);
+  }
+};
 
 const productApi = {
   createProduct,
   getProducts,
-  getAllProducts
-}
+  getAllProducts,
+  getProductByid
+};
 
-export default productApi
+export default productApi;

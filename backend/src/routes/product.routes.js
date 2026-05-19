@@ -1,7 +1,7 @@
 import express from 'express'
 import { identifySeller, indentifyUser } from '../middelware/auth.middelware.js'
-import { createProduct , getProducts , getAllProducts , getProductDetails  } from '../controller/products.controller.js'
-import { createProductValidator } from '../validetors/product.validator.js'
+import { createProduct , getProducts , getAllProducts , getProductDetails  , addVeriants } from '../controller/products.controller.js'
+import { createProductValidator, createVariantValidator } from '../validetors/product.validator.js'
 const ProductRoutes = express.Router()
 import multer from 'multer'
 
@@ -37,5 +37,7 @@ ProductRoutes.get('/allproducts', getAllProducts)
 
 ProductRoutes.get('/details/:productId' , indentifyUser , getProductDetails)
 
-export default ProductRoutes
+ProductRoutes.post('/:productId/veriants' , identifySeller , upload.array('images' , 7) , createVariantValidator , addVeriants )
 
+
+export default ProductRoutes

@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import productApi from "../services/product.api.jsx";
 import { setError, setLoading, setProducts } from "../state/products.slice";
-import { data } from "react-router";
+import { normalizeProduct } from "../services/product.normalize.js";
 
 export const Useproduct = () => {
   const dispatch = useDispatch();
@@ -15,8 +15,9 @@ export const Useproduct = () => {
 
       try {
         const data = await productApi.createProduct(formData);
-        dispatch(setProducts([data.product, ...products]));
-        return data.product;
+        const nextProduct = normalizeProduct(data.product);
+        dispatch(setProducts([nextProduct, ...products]));
+        return nextProduct;
       } catch (requestError) {
         dispatch(setError(requestError.message));
         throw requestError;
@@ -33,8 +34,9 @@ export const Useproduct = () => {
 
     try {
       const data = await productApi.getProducts();
-      dispatch(setProducts(data.products || []));
-      return data.products || [];
+      const normalizedProducts = (data.products || []).map(normalizeProduct);
+      dispatch(setProducts(normalizedProducts));
+      return normalizedProducts;
     } catch (requestError) {
       dispatch(setError(requestError.message));
       throw requestError;
@@ -49,7 +51,7 @@ export const Useproduct = () => {
 
     try {
       const data = await productApi.getAllProducts();
-      const productList = data.products || data.allProduct || [];
+      const productList = (data.products || data.allProduct || []).map(normalizeProduct);
       dispatch(setProducts(productList));
       return productList;
     } catch (requestError) {
@@ -60,26 +62,44 @@ export const Useproduct = () => {
     }
   }, [dispatch]);
 
-  const handleGetprodcutById = async (productId) => {
+  const handleGetprodcutById = useCallback(async (productId) => {
     dispatch(setLoading(true));
     dispatch(setError(null));
     try {
       const Productdetails = await productApi.getProductByid(productId);
-      dispatch(setProducts([Productdetails.product || Productdetails]));
-      return Productdetails.product || Productdetails;
+      const normalizedProduct = normalizeProduct(Productdetails.product || Productdetails);
+      dispatch(setProducts([normalizedProduct]));
+      return normalizedProduct;
     } catch (requestError) {
       dispatch(setError(requestError.message));
       throw requestError;
     } finally {
       dispatch(setLoading(false));
     }
-  };
+  }, [dispatch]);
+
+ const handleaddProductVeriant = useCallback(async (productId, variantPayload) => {
+    dispatch(setLoading(true));
+    dispatch(setError(null));
+    try {
+      const response = await productApi.addProductVeriant(productId, variantPayload);
+      const normalizedProduct = normalizeProduct(response.product || response);
+      dispatch(setProducts([normalizedProduct]));
+      return normalizedProduct;
+    } catch (requestError) {
+      dispatch(setError(requestError.message));
+      throw requestError;
+    } finally {
+      dispatch(setLoading(false));
+    }
+ }, [dispatch])
 
   return {
     handleCreateProduct,
     handleGetProducts,
     handleGetAllProducts,
     handleGetprodcutById ,
+    handleaddProductVeriant,
     loading,
     error,
     products,

@@ -8,6 +8,7 @@ import Protected from '../componants/Protected'
 import AppRedirect from '../componants/AppRedirect'
 import Home from '../features/products/pages/Home'
 import ProductDetails from '../features/products/pages/ProductDetails'
+import SellerProductdetails from '../features/products/pages/SellerProductdetails'
 
 const router = createBrowserRouter([
     {
@@ -40,6 +41,14 @@ const router = createBrowserRouter([
         element : (
           <Protected roles={['seller']}>
             <Dashboard />
+          </Protected>
+        )
+    },
+    {
+        path :'/seller/productdetails/:productId' ,
+        element : (
+          <Protected roles={['seller']}>
+            <SellerProductdetails />
           </Protected>
         )
     },

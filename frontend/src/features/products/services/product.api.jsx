@@ -67,11 +67,37 @@ export const getProductByid = async (productId) => {
   }
 };
 
+const addProductVeriant = async (productId, newProductVeriant) => {
+  const formdata = new FormData();
+
+  (newProductVeriant.images || []).forEach((image) => {
+    formdata.append("images", image);
+  });
+
+  if (newProductVeriant.sku) {
+    formdata.append("sku", newProductVeriant.sku);
+  }
+
+  formdata.append("stock", newProductVeriant.stock);
+  formdata.append("priceAmount", newProductVeriant.priceAmount || "");
+  formdata.append("priceCurrency", newProductVeriant.priceCurrency || "INR");
+  formdata.append("attribute", JSON.stringify(newProductVeriant.attributes || {}));
+
+  const response = await api.post(`/${productId}/veriants`, formdata, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  return response.data;
+};
+
 const productApi = {
   createProduct,
   getProducts,
   getAllProducts,
-  getProductByid
+  getProductByid,
+  addProductVeriant
 };
 
 export default productApi;

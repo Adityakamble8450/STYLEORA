@@ -121,7 +121,10 @@ const Dashboard = () => {
               ) : products.length ? (
                 <div className="mt-6 grid gap-5 md:grid-cols-2">
                   {products.map((product) => (
-                    <article
+                    <Link 
+                     
+                    to={`/seller/productdetails/${product._id}`}
+                     
                       key={product._id}
                       className="group overflow-hidden rounded-[1.6rem] border border-white/70 bg-[#fffaf5] shadow-[0_16px_32px_rgba(63,34,9,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(63,34,9,0.12)]"
                     >
@@ -160,7 +163,7 @@ const Dashboard = () => {
                           {product.description}
                         </p>
                       </div>
-                    </article>
+                    </Link>
                   ))}
                 </div>
               ) : (

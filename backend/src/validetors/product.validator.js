@@ -34,4 +34,36 @@ export const createProductValidator = [
   validateReq,
 ];
 
+export const createVariantValidator = [
+  body("stock")
+    .optional({ values: "falsy" })
+    .isFloat({ min: 0 })
+    .withMessage("Stock must be 0 or greater"),
+  body("priceAmount")
+    .optional({ values: "falsy" })
+    .isFloat({ gt: 0 })
+    .withMessage("Variant price must be greater than 0"),
+  body("attribute")
+    .optional({ values: "falsy" })
+    .custom((value) => {
+      if (!value) return true;
+
+      try {
+        const parsed = JSON.parse(value);
+        return typeof parsed === "object" && !Array.isArray(parsed) && parsed !== null;
+      } catch {
+        throw new Error("attribute must be a valid JSON object");
+      }
+    }),
+  body("attributeKey")
+    .optional({ values: "falsy" })
+    .isLength({ min: 1, max: 50 })
+    .withMessage("attributeKey must be between 1 and 50 characters"),
+  body("attributeValue")
+    .optional({ values: "falsy" })
+    .isLength({ min: 1, max: 100 })
+    .withMessage("attributeValue must be between 1 and 100 characters"),
+  validateReq,
+];
+
 

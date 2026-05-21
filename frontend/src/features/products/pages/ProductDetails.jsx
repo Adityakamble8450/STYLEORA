@@ -1,65 +1,92 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router'
-import { Heart, Search, Share2, ShoppingBag, Star, User } from 'lucide-react'
-import Useproduct from '../hook/Useproduct'
-import { findMatchingVariant, getDisplayProduct, getVariantGroups } from '../services/product.normalize'
+import { useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
+import { Link, useNavigate, useParams } from "react-router";
+import { Heart, Share2, Star } from "lucide-react";
+import Useproduct from "../hook/Useproduct";
+import UseCart from "../hook/UseCart";
+import StorefrontHeader from "../components/StorefrontHeader";
+import { findMatchingVariant, getDisplayProduct, getVariantGroups } from "../services/product.normalize";
 
-const formatCurrency = (amount, currency = 'INR') =>
-  new Intl.NumberFormat('en-IN', {
-    style: 'currency',
+const formatCurrency = (amount, currency = "INR") =>
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
     currency,
     maximumFractionDigits: 0,
-  }).format(Number(amount || 0))
+  }).format(Number(amount || 0));
 
 const getVariantPreviewImage = (variant, product) =>
-  variant?.images?.[0]?.url || product?.images?.[0]?.url || 'https://placehold.co/320x420/e7dfd2/6b5b4d?text=No+Image'
+  variant?.images?.[0]?.url || product?.images?.[0]?.url || "https://placehold.co/320x420/e7dfd2/6b5b4d?text=No+Image";
 
 const ProductDetails = () => {
-  const { productId } = useParams()
-  const { handleGetprodcutById, error, loading, products } = Useproduct()
-  const [product, setProduct] = useState(null)
-  const [selectedAttributes, setSelectedAttributes] = useState({})
-  const [selectedGalleryImage, setSelectedGalleryImage] = useState(0)
-  const [wishlist, setWishlist] = useState(false)
+  const navigate = useNavigate();
+  const { productId } = useParams();
+  const { user } = useSelector((state) => state.auth);
+  const { handleGetprodcutById, error, loading, products } = Useproduct();
+  const { handleAddToCart } = UseCart();
+  const [product, setProduct] = useState(null);
+  const [selectedAttributes, setSelectedAttributes] = useState({});
+  const [selectedGalleryImage, setSelectedGalleryImage] = useState(0);
+  const [wishlist, setWishlist] = useState(false);
+  const [addingToCart, setAddingToCart] = useState(false);
 
   useEffect(() => {
-    handleGetprodcutById(productId).catch(() => {})
-  }, [handleGetprodcutById, productId])
+    handleGetprodcutById(productId).catch(() => {});
+  }, [handleGetprodcutById, productId]);
 
   useEffect(() => {
     if (products?.length) {
-      setProduct(products[0])
+      setProduct(products[0]);
     }
-  }, [products])
+  }, [products]);
 
-  const variantGroups = useMemo(() => getVariantGroups(product?.variants || []), [product?.variants])
+  const variantGroups = useMemo(() => getVariantGroups(product?.variants || []), [product?.variants]);
   const activeVariant = useMemo(
     () => findMatchingVariant(product?.variants || [], selectedAttributes),
     [product?.variants, selectedAttributes],
-  )
+  );
   const displayProduct = useMemo(
     () => (product ? getDisplayProduct(product, activeVariant) : null),
     [product, activeVariant],
-  )
+  );
 
   const galleryImages = displayProduct?.displayImages?.length
     ? displayProduct.displayImages
-    : [{ url: 'https://placehold.co/900x1200/e7dfd2/6b5b4d?text=No+Image' }]
+    : [{ url: "https://placehold.co/900x1200/e7dfd2/6b5b4d?text=No+Image" }];
 
   useEffect(() => {
-    setSelectedGalleryImage(0)
-  }, [activeVariant?._id, product?._id])
+    setSelectedGalleryImage(0);
+  }, [activeVariant?._id, product?._id]);
 
   const handleAttributeSelect = (key, value) => {
     setSelectedAttributes((current) => ({
       ...current,
       [key]: current[key] === value ? undefined : value,
-    }))
-  }
+    }));
+  };
 
   const handleVariantSelect = (variant) => {
-    setSelectedAttributes(variant?.attributes || {})
-  }
+    setSelectedAttributes(variant?.attributes || {});
+  };
+
+  const handleAddProductToCart = async () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      setAddingToCart(true);
+      await handleAddToCart({
+        productId: product._id,
+        variantId: activeVariant?._id,
+        quantity: 1,
+      });
+      navigate("/cart");
+    } catch {}
+    finally {
+      setAddingToCart(false);
+    }
+  };
 
   if (loading && !product) {
     return (
@@ -72,7 +99,7 @@ const ProductDetails = () => {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (!product) {
@@ -80,60 +107,18 @@ const ProductDetails = () => {
       <div className="min-h-screen bg-[linear-gradient(180deg,_#faf6ef_0%,_#f4ecdf_55%,_#efe4d5_100%)] px-4 py-16">
         <div className="mx-auto max-w-3xl rounded-[2rem] border border-white/80 bg-white/85 p-10 text-center shadow-[0_22px_60px_rgba(70,39,10,0.08)]">
           <h1 className="font-serif text-4xl text-stone-950">Product not available</h1>
-          <p className="mt-3 text-stone-600">{error || 'Unable to load this product right now.'}</p>
+          <p className="mt-3 text-stone-600">{error || "Unable to load this product right now."}</p>
           <Link to="/" className="mt-6 inline-flex rounded-full bg-stone-950 px-6 py-3 text-sm font-semibold text-white">
             Back to home
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <section className="min-h-screen bg-[linear-gradient(180deg,_#faf6ef_0%,_#f4ecdf_55%,_#efe4d5_100%)] text-stone-900">
-      <div className="border-b border-stone-200/80 bg-[linear-gradient(90deg,_rgba(255,255,255,0.75),_rgba(247,241,233,0.92),_rgba(255,255,255,0.75))]">
-        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm text-stone-700 sm:px-6 lg:px-10">
-          <span>Free Shipping on Orders Above ₹999</span>
-          <span>Easy Returns & Exchanges</span>
-          <div className="flex items-center gap-6">
-            <span>Download App</span>
-            <span>Sell on Stylore Maki</span>
-          </div>
-        </div>
-      </div>
-
-      <header className="bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-[1600px] items-center gap-4 px-4 py-5 sm:px-6 lg:px-10">
-          <Link to="/" className="min-w-fit">
-            <div className="font-serif text-[2.2rem] leading-none tracking-[0.08em] text-stone-950">STYLORE</div>
-            <div className="text-xs uppercase tracking-[0.34em] text-stone-500">Maki</div>
-          </Link>
-
-          <nav className="hidden items-center gap-8 pl-4 text-[1rem] text-stone-800 xl:flex">
-            <a href="/" className="transition hover:text-amber-700">Home</a>
-            <a href="/" className="transition hover:text-amber-700">Men</a>
-            <a href="/" className="transition hover:text-amber-700">Women</a>
-            <a href="/" className="transition hover:text-amber-700">Kids</a>
-            <a href="/" className="transition hover:text-amber-700">New Arrivals</a>
-            <a href="/" className="transition hover:text-amber-700">Collections</a>
-            <a href="/" className="transition hover:text-amber-700">Offers</a>
-          </nav>
-
-          <div className="ml-auto flex items-center gap-3 sm:gap-4">
-            <div className="hidden min-w-[260px] items-center gap-3 rounded-2xl border border-stone-200 bg-white px-4 py-3 shadow-sm md:flex xl:min-w-[360px]">
-              <Search size={18} className="text-stone-500" />
-              <span className="text-sm text-stone-400">Search for products...</span>
-            </div>
-
-            <Heart size={20} className="text-stone-700" />
-            <ShoppingBag size={20} className="text-stone-700" />
-            <div className="flex items-center gap-2 text-stone-700">
-              <User size={20} />
-              <span className="hidden text-sm md:inline">Hi, User</span>
-            </div>
-          </div>
-        </div>
-      </header>
+      <StorefrontHeader />
 
       <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-10">
         <div className="overflow-hidden text-ellipsis whitespace-nowrap text-sm text-stone-500">
@@ -151,7 +136,7 @@ const ProductDetails = () => {
                   type="button"
                   onClick={() => setSelectedGalleryImage(index)}
                   className={`overflow-hidden rounded-[1.1rem] border bg-white shadow-sm transition ${
-                    selectedGalleryImage === index ? 'border-stone-950' : 'border-stone-200'
+                    selectedGalleryImage === index ? "border-stone-950" : "border-stone-200"
                   }`}
                 >
                   <img
@@ -175,10 +160,10 @@ const ProductDetails = () => {
                   type="button"
                   onClick={() => setWishlist((current) => !current)}
                   className={`absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full shadow-sm sm:right-5 sm:top-5 sm:h-11 sm:w-11 ${
-                    wishlist ? 'bg-amber-50 text-amber-700' : 'bg-white/92 text-stone-700'
+                    wishlist ? "bg-amber-50 text-amber-700" : "bg-white/92 text-stone-700"
                   }`}
                 >
-                  <Heart size={18} fill={wishlist ? 'currentColor' : 'none'} />
+                  <Heart size={18} fill={wishlist ? "currentColor" : "none"} />
                 </button>
 
                 <button
@@ -212,7 +197,7 @@ const ProductDetails = () => {
               </p>
               {activeVariant?.stock >= 0 ? (
                 <span className="pb-1 text-sm font-medium text-stone-500">
-                  {activeVariant ? `${activeVariant.stock} in stock` : 'Base product price'}
+                  {activeVariant ? `${activeVariant.stock} in stock` : "Base product price"}
                 </span>
               ) : null}
             </div>
@@ -222,12 +207,12 @@ const ProductDetails = () => {
             {product.variants?.length ? (
               <div className="mt-8 border-t border-stone-200 pt-6">
                 <p className="text-lg font-semibold text-stone-900">
-                  Selected Variant: <span className="font-medium text-stone-700">{activeVariant?.label || 'Original product'}</span>
+                  Selected Variant: <span className="font-medium text-stone-700">{activeVariant?.label || "Original product"}</span>
                 </p>
 
                 <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
                   {product.variants.map((variant) => {
-                    const isActive = activeVariant?._id === variant._id
+                    const isActive = activeVariant?._id === variant._id;
 
                     return (
                       <button
@@ -235,7 +220,7 @@ const ProductDetails = () => {
                         type="button"
                         onClick={() => handleVariantSelect(variant)}
                         className={`min-w-[78px] rounded-[1rem] border bg-white p-1.5 transition sm:min-w-[84px] ${
-                          isActive ? 'border-stone-950 shadow-[0_0_0_1px_#1c1917]' : 'border-stone-200'
+                          isActive ? "border-stone-950 shadow-[0_0_0_1px_#1c1917]" : "border-stone-200"
                         }`}
                       >
                         <img
@@ -244,7 +229,7 @@ const ProductDetails = () => {
                           className="h-20 w-full rounded-[0.8rem] object-cover sm:h-24"
                         />
                       </button>
-                    )
+                    );
                   })}
                 </div>
               </div>
@@ -255,12 +240,12 @@ const ProductDetails = () => {
                 {Object.entries(variantGroups).map(([key, values]) => (
                   <div key={key} className="min-w-0">
                     <p className="text-lg font-semibold text-stone-900">
-                      {key}: <span className="font-medium text-stone-700">{selectedAttributes[key] || 'Not selected'}</span>
+                      {key}: <span className="font-medium text-stone-700">{selectedAttributes[key] || "Not selected"}</span>
                     </p>
 
                     <div className="mt-3 flex flex-wrap gap-3">
                       {values.map((value) => {
-                        const isSelected = selectedAttributes[key] === value
+                        const isSelected = selectedAttributes[key] === value;
 
                         return (
                           <button
@@ -269,13 +254,13 @@ const ProductDetails = () => {
                             onClick={() => handleAttributeSelect(key, value)}
                             className={`rounded-[1rem] border px-5 py-3 text-sm font-medium transition ${
                               isSelected
-                                ? 'border-stone-950 bg-stone-950 text-white'
-                                : 'border-stone-300 bg-white text-stone-700'
+                                ? "border-stone-950 bg-stone-950 text-white"
+                                : "border-stone-300 bg-white text-stone-700"
                             }`}
                           >
                             {value}
                           </button>
-                        )
+                        );
                       })}
                     </div>
                   </div>
@@ -284,10 +269,18 @@ const ProductDetails = () => {
             )}
 
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
-              <button className="rounded-[1.15rem] border border-stone-300 bg-white px-5 py-4 text-base font-semibold text-stone-900 shadow-sm transition hover:bg-stone-50">
-                Add to Cart
+              <button
+                type="button"
+                onClick={handleAddProductToCart}
+                className="rounded-[1.15rem] border border-stone-300 bg-white px-5 py-4 text-base font-semibold text-stone-900 shadow-sm transition hover:bg-stone-50"
+              >
+                {addingToCart ? "Adding..." : "Add to Cart"}
               </button>
-              <button className="rounded-[1.15rem] bg-[#b97a29] px-5 py-4 text-base font-semibold text-white shadow-sm transition hover:bg-[#a26922]">
+              <button
+                type="button"
+                onClick={handleAddProductToCart}
+                className="rounded-[1.15rem] bg-[#b97a29] px-5 py-4 text-base font-semibold text-white shadow-sm transition hover:bg-[#a26922]"
+              >
                 Buy Now
               </button>
             </div>
@@ -295,7 +288,7 @@ const ProductDetails = () => {
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default ProductDetails
+export default ProductDetails;

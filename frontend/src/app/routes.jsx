@@ -9,6 +9,7 @@ import AppRedirect from '../componants/AppRedirect'
 import Home from '../features/products/pages/Home'
 import ProductDetails from '../features/products/pages/ProductDetails'
 import SellerProductdetails from '../features/products/pages/SellerProductdetails'
+import Cart from '../features/products/pages/Cart'
 
 const router = createBrowserRouter([
     {
@@ -55,6 +56,14 @@ const router = createBrowserRouter([
     {
         path  : '/details/:productId' ,
         element : <ProductDetails/>
+    },
+    {
+        path: '/cart',
+        element: (
+          <Protected>
+            <Cart />
+          </Protected>
+        )
     }
 ])
 

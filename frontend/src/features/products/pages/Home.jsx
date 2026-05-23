@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { ArrowRight, Heart, ShoppingBag } from "lucide-react";
+import { ArrowRight, Heart, Search, ShoppingBag } from "lucide-react";
 import { useSelector } from "react-redux";
 import Useproduct from "../hook/Useproduct";
 import UseCart from "../hook/UseCart";
@@ -65,6 +65,7 @@ const Home = () => {
   const [addingId, setAddingId] = useState(null);
   const [addError, setAddError] = useState("");
   const [activeSlide, setActiveSlide] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     handleGetAllProducts().catch(() => {});
@@ -78,7 +79,28 @@ const Home = () => {
     return () => window.clearInterval(intervalId);
   }, []);
 
-  const featuredProducts = useMemo(() => products.slice(0, 8), [products]);
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+
+  const filteredProducts = useMemo(() => {
+    if (!normalizedSearchTerm) {
+      return products;
+    }
+
+    return products.filter((product) => {
+      const title = String(product?.title ?? "").toLowerCase();
+      const description = String(product?.description ?? "").toLowerCase();
+
+      return title.includes(normalizedSearchTerm) || description.includes(normalizedSearchTerm);
+    });
+  }, [normalizedSearchTerm, products]);
+
+  const displayedProducts = useMemo(() => {
+    if (normalizedSearchTerm) {
+      return filteredProducts;
+    }
+
+    return products.slice(0, 8);
+  }, [filteredProducts, normalizedSearchTerm, products]);
 
   const handleAddProductToCart = async (product) => {
     if (!user) {
@@ -199,7 +221,7 @@ const Home = () => {
         </section>
 
         <section id="catalog" className="mt-12">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <h2 className="font-serif text-4xl text-stone-950 sm:text-5xl">You may also like</h2>
               <p className="mt-2 text-base text-stone-600">Live products from your backend, styled as a premium shopping grid.</p>
@@ -207,6 +229,24 @@ const Home = () => {
             <Link to="/cart" className="inline-flex items-center gap-2 text-sm font-semibold text-[#9d631d]">
               View Cart <ArrowRight size={16} />
             </Link>
+          </div>
+
+          <div className="mt-6 rounded-[1.5rem] border border-white/80 bg-white/85 px-4 py-4 shadow-[0_18px_42px_rgba(70,39,10,0.06)] sm:px-5">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-500" />
+              <input
+                type="search"
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Search products by name or description"
+                className="w-full rounded-2xl border border-stone-200 bg-stone-50 py-3 pl-11 pr-4 text-sm text-stone-900 outline-none transition focus:border-[#c8893f] focus:bg-white"
+              />
+            </div>
+            <p className="mt-3 text-sm text-stone-600">
+              {normalizedSearchTerm
+                ? `${filteredProducts.length} ${filteredProducts.length === 1 ? "product" : "products"} found`
+                : `${products.length} products available`}
+            </p>
           </div>
 
           {error ? (
@@ -229,9 +269,13 @@ const Home = () => {
                 </div>
               ))}
             </div>
+          ) : normalizedSearchTerm && displayedProducts.length === 0 ? (
+            <div className="mt-8 rounded-[1.5rem] border border-dashed border-stone-300 bg-white/80 px-5 py-8 text-center text-stone-700">
+              No products match “{searchTerm}”. Try another keyword.
+            </div>
           ) : (
             <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-              {featuredProducts.map((product) => (
+              {displayedProducts.map((product) => (
                 <article
                   key={product._id}
                   className="group overflow-hidden rounded-[1.5rem] border border-white/80 bg-white/82 shadow-[0_18px_42px_rgba(70,39,10,0.08)] transition duration-300 hover:-translate-y-1"

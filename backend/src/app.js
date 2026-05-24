@@ -11,8 +11,22 @@ import UserAuthrouter from './routes/user.auth.route.js'
 import ProductRoutes from "./routes/product.routes.js";
 import CartRoutes from "./routes/cart.route.js";
 
+const allowedOrigins = new Set([
+    process.env.FRONTEND_ORIGIN,
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:5175',
+].filter(Boolean));
+
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.has(origin)) {
+            callback(null, true)
+            return
+        }
+
+        callback(new Error(`CORS blocked for origin: ${origin}`))
+    },
     credentials: true
 }))
 app.use(express.json());

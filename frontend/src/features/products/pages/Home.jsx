@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router";
-import { ArrowRight, Heart, Search, ShoppingBag } from "lucide-react";
+import { Link, useNavigate, useSearchParams } from "react-router";
+import { ArrowRight, Heart, ShoppingBag } from "lucide-react";
 import { useSelector } from "react-redux";
 import Useproduct from "../hook/Useproduct";
 import UseCart from "../hook/UseCart";
@@ -8,7 +8,7 @@ import StorefrontHeader from "../components/StorefrontHeader";
 
 const heroSlides = [
   {
-    image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1600&q=80",
+    image: "https://images.unsplash.com/photo-1559697242-cacab5d5b62c?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     title: "Collections That Convert",
     caption: "Build a storefront where original products and live variants feel polished from the first click.",
   },
@@ -62,10 +62,11 @@ const Home = () => {
   const { user } = useSelector((state) => state.auth);
   const { handleGetAllProducts, products, loading, error } = Useproduct();
   const { handleAddToCart } = UseCart();
+  const [searchParams] = useSearchParams();
   const [addingId, setAddingId] = useState(null);
   const [addError, setAddError] = useState("");
   const [activeSlide, setActiveSlide] = useState(0);
-  const [searchTerm, setSearchTerm] = useState("");
+  const searchTerm = searchParams.get("q") || "";
 
   useEffect(() => {
     handleGetAllProducts().catch(() => {});
@@ -232,17 +233,7 @@ const Home = () => {
           </div>
 
           <div className="mt-6 rounded-[1.5rem] border border-white/80 bg-white/85 px-4 py-4 shadow-[0_18px_42px_rgba(70,39,10,0.06)] sm:px-5">
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-500" />
-              <input
-                type="search"
-                value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Search products by name or description"
-                className="w-full rounded-2xl border border-stone-200 bg-stone-50 py-3 pl-11 pr-4 text-sm text-stone-900 outline-none transition focus:border-[#c8893f] focus:bg-white"
-              />
-            </div>
-            <p className="mt-3 text-sm text-stone-600">
+            <p className="text-sm text-stone-600">
               {normalizedSearchTerm
                 ? `${filteredProducts.length} ${filteredProducts.length === 1 ? "product" : "products"} found`
                 : `${products.length} products available`}

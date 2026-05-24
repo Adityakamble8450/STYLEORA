@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
 import { Heart, Search, ShoppingBag, User } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { clearAuthState } from "../../auth/state/auth.slice";
@@ -20,11 +20,13 @@ const navLinks = [
 const StorefrontHeader = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { cart, initialized, handleGetCart } = UseCart();
   const [isCartMenuOpen, setCartMenuOpen] = useState(false);
   const cartRef = useRef(null);
+  const searchTerm = searchParams.get("q") || "";
 
   useEffect(() => {
     if (user && !initialized) {
@@ -48,6 +50,24 @@ const StorefrontHeader = () => {
     dispatch(clearAuthState());
     dispatch(clearCartState());
     navigate("/login", { replace: true });
+  };
+
+  const handleSearchChange = (event) => {
+    const value = event.target.value;
+    const nextParams = new URLSearchParams(searchParams);
+
+    if (value.trim()) {
+      nextParams.set("q", value.trim());
+    } else {
+      nextParams.delete("q");
+    }
+
+    if (location.pathname !== "/") {
+      navigate(`/?${nextParams.toString()}`, { replace: true });
+      return;
+    }
+
+    setSearchParams(nextParams, { replace: true });
   };
 
   return (
@@ -87,7 +107,13 @@ const StorefrontHeader = () => {
           <div className="ml-auto flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="flex min-w-[250px] items-center gap-3 rounded-2xl border border-stone-200 bg-white px-4 py-3 shadow-sm xl:min-w-[360px]">
               <Search size={18} className="text-stone-500" />
-              <span className="text-sm text-stone-400">Search for products...</span>
+              <input
+                type="search"
+                value={searchTerm}
+                onChange={handleSearchChange}
+                placeholder="Search products..."
+                className="w-full border-0 bg-transparent text-sm text-stone-900 outline-none placeholder:text-stone-400"
+              />
             </div>
 
             <div className="flex items-center gap-4 text-stone-700">

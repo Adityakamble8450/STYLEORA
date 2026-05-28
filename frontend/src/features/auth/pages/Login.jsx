@@ -92,7 +92,7 @@ const FashionPanel = () => (
         <p className="text-sm italic text-white/65 leading-6">
           "Stylore Maki gave my wardrobe a complete identity. The quality is unmatched."
         </p>
-        <p className="mt-3 text-xs font-semibold text-amber-300/80">— Priya K., Mumbai</p>
+        <p className="mt-3 text-xs font-semibold text-amber-300/80">— Aditya K., India</p>
       </div>
     </div>
   </div>
